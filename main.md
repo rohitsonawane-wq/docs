@@ -115,8 +115,8 @@ All communication happens via **message patterns** (RabbitMQ). Every response fo
 
 | Value | Description |
 |-------|-------------|
-| `"self"` | Booking for self |
-| `"arranger"` | Booking arranged for someone else |
+| `"traveller"` | Booking for the traveller |
+| `"travelArranger"` | Booking arranged for someone else |
 
 ### GenderEnum
 
@@ -126,6 +126,8 @@ All communication happens via **message patterns** (RabbitMQ). Every response fo
 | `"female"` |
 
 ### TravelerTypeEnum
+
+Used for the booking field `tripPurpose` (internal vs external).
 
 | Value |
 |-------|
@@ -145,6 +147,16 @@ All communication happens via **message patterns** (RabbitMQ). Every response fo
 | `"offline_other"` | Offline other type booking |
 | `"train"` | Online train booking |
 | `"car"` | Online car booking |
+
+### TransportationTypeEnum
+
+Used for offline JR itineraries (`transportationType`).
+
+| Value | Description |
+|-------|-------------|
+| `"rail"` | Rail |
+| `"bus"` | Bus |
+| `"ship"` | Ship |
 
 ### BookingStatus
 
@@ -177,7 +189,7 @@ Creates a new booking with all required fields. Status is set to `draft`.
 
 ```json
 {
-  "applicant": "self",
+  "applicant": "traveller",
   "firstName": "Taro",
   "lastName": "Yamada",
   "telephone": "090-1234-5678",
@@ -188,7 +200,7 @@ Creates a new booking with all required fields. Status is set to `draft`.
   "japaneseLastName": "山田",
   "fullNameAsPerPassport": "TARO YAMADA",
   "gender": "male",
-  "travelerType": "internal",
+  "tripPurpose": "internal",
   "meetingNo": "MTG-2026-001",
   "itineraries": [
     {
@@ -226,7 +238,7 @@ Creates a new booking with all required fields. Status is set to `draft`.
 
 | Key | Type | Required | Validation | Description |
 |-----|------|----------|------------|-------------|
-| `applicant` | `string` | Yes | Enum: `"self"`, `"arranger"` | Who is making the booking |
+| `applicant` | `string` | Yes | Enum: `"traveller"`, `"travelArranger"` | Who is making the booking |
 | `firstName` | `string` | Yes | Non-empty string | First name (English) |
 | `lastName` | `string` | Yes | Non-empty string | Last name (English) |
 | `telephone` | `string` | Yes | Non-empty string | Phone number |
@@ -237,7 +249,7 @@ Creates a new booking with all required fields. Status is set to `draft`.
 | `japaneseLastName` | `string` | Yes | Non-empty string | Last name in Japanese |
 | `fullNameAsPerPassport` | `string` | Yes | Non-empty string | Full name as printed on passport |
 | `gender` | `string` | Yes | Enum: `"male"`, `"female"` | Gender |
-| `travelerType` | `string` | Yes | Enum: `"internal"`, `"external"` | Traveler type |
+| `tripPurpose` | `string` | Yes | Enum: `"internal"`, `"external"` | Trip purpose (internal vs external) |
 | `meetingNo` | `string` | No | String | Meeting reference number |
 | `itineraries` | `array` | No | Array of itinerary objects | List of itineraries (see [Itinerary Object](#itinerary-object-createitinerarydto)) |
 
@@ -253,7 +265,7 @@ Creates a new booking with all required fields. Status is set to `draft`.
     "tenantId": 1,
     "travellerId": 123,
     "createdBy": 2,
-    "applicant": "self",
+    "applicant": "traveller",
     "firstName": "Taro",
     "lastName": "Yamada",
     "telephone": "090-1234-5678",
@@ -263,7 +275,7 @@ Creates a new booking with all required fields. Status is set to `draft`.
     "japaneseLastName": "山田",
     "fullNameAsPerPassport": "TARO YAMADA",
     "gender": "male",
-    "travelerType": "internal",
+    "tripPurpose": "internal",
     "meetingNo": "MTG-2026-001",
     "status": "draft",
     "approvalStatus": null,
@@ -326,7 +338,7 @@ Creates a new booking with all required fields. Status is set to `draft`.
 | `tenantId` | `number` | No | Tenant ID (set by server) |
 | `travellerId` | `number` | Yes | Traveller ID |
 | `createdBy` | `number` | No | User ID who created the booking (set by server) |
-| `applicant` | `string` | Yes | `"self"` or `"arranger"` |
+| `applicant` | `string` | Yes | `"traveller"` or `"travelArranger"` |
 | `firstName` | `string` | Yes | First name |
 | `lastName` | `string` | Yes | Last name |
 | `telephone` | `string` | Yes | Phone number |
@@ -336,7 +348,7 @@ Creates a new booking with all required fields. Status is set to `draft`.
 | `japaneseLastName` | `string` | Yes | Japanese last name |
 | `fullNameAsPerPassport` | `string` | Yes | Passport full name |
 | `gender` | `string` | Yes | `"male"` or `"female"` |
-| `travelerType` | `string` | Yes | `"internal"` or `"external"` |
+| `tripPurpose` | `string` | Yes | `"internal"` or `"external"` |
 | `meetingNo` | `string` | Yes | Meeting number |
 | `status` | `string` | No | `"draft"`, `"pending"`, `"confirmed"`, `"cancelled"` |
 | `approvalStatus` | `string` | Yes | `"pending"`, `"approved"`, `"rejected"` |
@@ -357,7 +369,7 @@ Save a partial booking as draft. All fields are optional. Pass `id: null` or omi
 ```json
 {
   "id": null,
-  "applicant": "self",
+  "applicant": "traveller",
   "firstName": "Taro",
   "email": "taro@example.com",
   "travellerId": 123
@@ -386,7 +398,7 @@ Save a partial booking as draft. All fields are optional. Pass `id: null` or omi
 | Key | Type | Required | Validation | Description |
 |-----|------|----------|------------|-------------|
 | `id` | `number \| null` | No | Integer or null | `null`/omitted = create new draft, number = update existing draft |
-| `applicant` | `string` | No | Enum: `"self"`, `"arranger"` | Who is making the booking |
+| `applicant` | `string` | No | Enum: `"traveller"`, `"travelArranger"` | Who is making the booking |
 | `firstName` | `string` | No | String | First name |
 | `lastName` | `string` | No | String | Last name |
 | `telephone` | `string` | No | String | Phone number |
@@ -397,7 +409,7 @@ Save a partial booking as draft. All fields are optional. Pass `id: null` or omi
 | `japaneseLastName` | `string` | No | String | Japanese last name |
 | `fullNameAsPerPassport` | `string` | No | String | Passport name |
 | `gender` | `string` | No | Enum: `"male"`, `"female"` | Gender |
-| `travelerType` | `string` | No | Enum: `"internal"`, `"external"` | Traveler type |
+| `tripPurpose` | `string` | No | Enum: `"internal"`, `"external"` | Trip purpose (internal vs external) |
 | `meetingNo` | `string` | No | String | Meeting number |
 | `itineraries` | `array` | No | Array of itinerary objects | Replaces ALL existing itineraries when provided |
 
@@ -415,7 +427,7 @@ Save a partial booking as draft. All fields are optional. Pass `id: null` or omi
     "tenantId": 1,
     "travellerId": 123,
     "createdBy": 2,
-    "applicant": "self",
+    "applicant": "traveller",
     "firstName": "Taro",
     "lastName": "Yamada",
     "telephone": "090-1234-5678",
@@ -425,7 +437,7 @@ Save a partial booking as draft. All fields are optional. Pass `id: null` or omi
     "japaneseLastName": null,
     "fullNameAsPerPassport": null,
     "gender": null,
-    "travelerType": null,
+    "tripPurpose": null,
     "meetingNo": null,
     "status": "draft",
     "approvalStatus": null,
@@ -497,7 +509,7 @@ The following fields must be filled (non-null, non-empty) on the booking before 
 - `japaneseLastName`
 - `fullNameAsPerPassport`
 - `gender`
-- `travelerType`
+- `tripPurpose`
 - `applicant`
 - At least **one itinerary** must exist
 
@@ -513,7 +525,7 @@ The following fields must be filled (non-null, non-empty) on the booking before 
     "tenantId": 1,
     "travellerId": 123,
     "createdBy": 2,
-    "applicant": "self",
+    "applicant": "traveller",
     "firstName": "Taro",
     "lastName": "Yamada",
     "telephone": "090-1234-5678",
@@ -523,7 +535,7 @@ The following fields must be filled (non-null, non-empty) on the booking before 
     "japaneseLastName": "山田",
     "fullNameAsPerPassport": "TARO YAMADA",
     "gender": "male",
-    "travelerType": "internal",
+    "tripPurpose": "internal",
     "meetingNo": "MTG-2026-001",
     "status": "pending",
     "approvalStatus": null,
@@ -554,7 +566,7 @@ Paginated list of bookings with optional filters. Ordered by `createdAt DESC`.
 
 ```json
 {
-  "type": "self",
+  "type": "traveller",
   "status": "draft",
   "approvalStatus": "pending",
   "travellerId": 123,
@@ -568,7 +580,7 @@ Paginated list of bookings with optional filters. Ordered by `createdAt DESC`.
 
 | Key | Type | Required | Default | Validation | Description |
 |-----|------|----------|---------|------------|-------------|
-| `type` | `string` | No | - | Enum: `"self"`, `"arranger"` | Filter by applicant type |
+| `type` | `string` | No | - | Enum: `"traveller"`, `"travelArranger"` | Filter by applicant type |
 | `status` | `string` | No | - | Enum: `"draft"`, `"pending"`, `"confirmed"`, `"cancelled"` | Filter by booking status |
 | `approvalStatus` | `string` | No | - | Enum: `"pending"`, `"approved"`, `"rejected"` | Filter by approval status |
 | `travellerId` | `number` | No | - | Integer | Filter by traveller ID |
@@ -594,7 +606,7 @@ Paginated list of bookings with optional filters. Ordered by `createdAt DESC`.
       "tenantId": 1,
       "travellerId": 123,
       "createdBy": 2,
-      "applicant": "self",
+      "applicant": "traveller",
       "firstName": "Taro",
       "lastName": "Yamada",
       "telephone": "090-1234-5678",
@@ -604,7 +616,7 @@ Paginated list of bookings with optional filters. Ordered by `createdAt DESC`.
       "japaneseLastName": "山田",
       "fullNameAsPerPassport": "TARO YAMADA",
       "gender": "male",
-      "travelerType": "internal",
+      "tripPurpose": "internal",
       "meetingNo": "MTG-2026-001",
       "status": "draft",
       "approvalStatus": null,
@@ -670,7 +682,7 @@ Fetch a single booking with all itineraries for preview.
     "tenantId": 1,
     "travellerId": 123,
     "createdBy": 2,
-    "applicant": "self",
+    "applicant": "traveller",
     "firstName": "Taro",
     "lastName": "Yamada",
     "telephone": "090-1234-5678",
@@ -680,7 +692,7 @@ Fetch a single booking with all itineraries for preview.
     "japaneseLastName": "山田",
     "fullNameAsPerPassport": "TARO YAMADA",
     "gender": "male",
-    "travelerType": "internal",
+    "tripPurpose": "internal",
     "meetingNo": "MTG-2026-001",
     "status": "draft",
     "approvalStatus": null,
@@ -759,7 +771,7 @@ Paginated list of confirmed bookings for a specific traveller. Only returns book
       "tenantId": 1,
       "travellerId": 123,
       "createdBy": 2,
-      "applicant": "self",
+      "applicant": "traveller",
       "firstName": "Taro",
       "lastName": "Yamada",
       "telephone": "090-1234-5678",
@@ -769,7 +781,7 @@ Paginated list of confirmed bookings for a specific traveller. Only returns book
       "japaneseLastName": "山田",
       "fullNameAsPerPassport": "TARO YAMADA",
       "gender": "male",
-      "travelerType": "internal",
+      "tripPurpose": "internal",
       "meetingNo": null,
       "status": "confirmed",
       "approvalStatus": "approved",
@@ -911,7 +923,8 @@ This is the shape used when sending itineraries in create/draft requests. Send o
 
 | Key | Type | Required | Validation | Description |
 |-----|------|----------|------------|-------------|
-| `transportationType` | `string` | No | String | Type of transportation (e.g., Shinkansen) |
+| `transportationType` | `string` | No | Enum: `"rail"`, `"bus"`, `"ship"` | Transportation mode |
+| `noReservationRequired` | `boolean` | No | Boolean | When true, no seat reservation is required; defaults to `false` if omitted |
 | `ticketType` | `string` | No | String | Ticket type (e.g., Round-trip) |
 | `departureDate` | `string` | No | ISO 8601 date (`YYYY-MM-DD`) | Departure date |
 | `origin` | `string` | No | String | Origin station |
@@ -930,7 +943,8 @@ This is the shape used when sending itineraries in create/draft requests. Send o
 ```json
 {
   "type": "offline_jr",
-  "transportationType": "Shinkansen",
+  "transportationType": "rail",
+  "noReservationRequired": false,
   "ticketType": "Round-trip",
   "departureDate": "2026-05-01",
   "origin": "Tokyo Station",
@@ -1036,7 +1050,8 @@ All itinerary responses are **flattened** - the type-specific fields from the su
 | Key | Type | Nullable | Description |
 |-----|------|----------|-------------|
 | `tenantId` | `number` | No | Tenant ID |
-| `transportationType` | `string` | Yes | Transportation type |
+| `transportationType` | `string` | Yes | Enum: `"rail"`, `"bus"`, `"ship"` |
+| `noReservationRequired` | `boolean` | No | Defaults to `false` |
 | `ticketType` | `string` | Yes | Ticket type |
 | `departureDate` | `string (YYYY-MM-DD)` | Yes | Departure date |
 | `origin` | `string` | Yes | Origin station |
@@ -1249,7 +1264,8 @@ Paginated list of itineraries for a booking.
     "type": "offline_jr",
     "sortOrder": 2,
     "createdAt": "2026-04-14T10:00:00.000Z",
-    "transportationType": "Shinkansen",
+    "transportationType": "rail",
+    "noReservationRequired": false,
     "ticketType": "Round-trip",
     "departureDate": "2026-05-01",
     "origin": "Tokyo Station",
